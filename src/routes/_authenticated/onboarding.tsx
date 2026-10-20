@@ -30,15 +30,18 @@ function Onboarding() {
     setBusy(true);
     const { error } = await supabase.from("profiles").upsert({
       id: userId,
-      interface_language: vals.interface_language,
-      level: vals.level,
-      goal: vals.goal,
-      daily_minutes: Number(vals.daily_minutes),
+      interface_language: vals["interface_language"] ?? "en",
+      level: vals["level"] ?? null,
+      goal: vals["goal"] ?? null,
+      daily_minutes: Number(vals["daily_minutes"]),
       onboarded: true,
       updated_at: new Date().toISOString(),
     });
     setBusy(false);
-    if (error) return toast.error("Couldn't save your preferences. Please try again.");
+    if (error) {
+      toast.error("Couldn't save your preferences. Please try again.");
+      return;
+    }
     await qc.invalidateQueries({ queryKey: ["profile"] });
     navigate({ to: "/dashboard" });
   }
