@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/site";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>) => ({ mode: s.mode === "signup" ? ("signup" as const) : undefined }),
+  validateSearch: (s: Record<string, unknown>): { mode?: "signup" } => (s["mode"] === "signup" ? { mode: "signup" } : {}),
   head: () => ({
     meta: [
       { title: "Log in or sign up — Kannada Connect" },
@@ -100,14 +100,14 @@ function AuthPage() {
             )}
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" aria-invalid={!!errors.email} />
-              {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" aria-invalid={!!errors["email"]} />
+              {errors["email"] && <p className="text-xs text-destructive">{errors["email"]}</p>}
             </div>
             {mode !== "forgot" && (
               <div className="space-y-1.5">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "signup" ? "new-password" : "current-password"} aria-invalid={!!errors.password} />
-                {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "signup" ? "new-password" : "current-password"} aria-invalid={!!errors["password"]} />
+                {errors["password"] && <p className="text-xs text-destructive">{errors["password"]}</p>}
               </div>
             )}
             <Button type="submit" variant="hero" className="w-full" disabled={busy}>

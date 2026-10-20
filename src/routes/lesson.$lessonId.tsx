@@ -41,7 +41,7 @@ function LessonPage() {
   const [results, setResults] = useState<{ questionId: string; correct: boolean }[]>([]);
   const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "guest">("idle");
 
-  const q = quiz[qi];
+  const q = quiz[qi]!;
 
   async function next() {
     const r = [...results, { questionId: q.id, correct: picked === q.answer }];

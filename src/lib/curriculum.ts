@@ -246,7 +246,7 @@ export function buildQuiz(lesson: Lesson): QuizQuestion[] {
 export function dailyPhrase(date = new Date()) {
   const all = ALL_LESSONS.flatMap((l) => l.phrases);
   const day = Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000);
-  return all[day % all.length];
+  return all[day % all.length]!;
 }
 
 // ---------- Real-life conversations ----------
