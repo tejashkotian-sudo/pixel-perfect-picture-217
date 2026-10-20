@@ -45,7 +45,7 @@ function Learn() {
                     {done.has(l.id) && <CheckCircle2 className="size-5 text-success" aria-label="Completed" />}
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{l.summary}</p>
-                  <div className="kn mt-3 text-primary">{l.phrases[0].kn}</div>
+                  <div className="kn mt-3 text-primary">{l.phrases[0]?.kn}</div>
                   <div className="mt-1 text-xs text-muted-foreground">{l.phrases.length} phrases · quiz</div>
                 </Link>
               ))}

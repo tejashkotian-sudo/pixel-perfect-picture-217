@@ -9,10 +9,10 @@ export function Conversation({ scenario }: { scenario: Scenario }) {
   const [log, setLog] = useState<{ who: string; kn: string; tr: string; en: string; mine?: boolean }[]>([]);
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
   const done = step >= scenario.steps.length;
-  const cur = scenario.steps[step];
+  const cur = scenario.steps[step]!;
 
   const choose = (i: number) => {
-    const c = cur.choices[i];
+    const c = cur.choices[i]!;
     setFeedback({ ok: c.correct, text: c.feedback });
     if (c.correct) {
       setLog((l) => [...l, { who: cur.speakerName, ...cur.speaker }, { who: "You", ...c.reply, mine: true }]);

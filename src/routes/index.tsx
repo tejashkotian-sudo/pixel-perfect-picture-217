@@ -52,7 +52,7 @@ function Index() {
         <p className="mt-2 text-muted-foreground">Start wherever you need Kannada most.</p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {SITUATIONS.map((s, i) => {
-            const Icon = ICONS[i];
+            const Icon = ICONS[i]!;
             return (
               <Link key={s.key} to="/learn" hash={s.moduleId} className="surface group flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-lift">
                 <span className="grid size-12 place-items-center rounded-xl bg-secondary text-primary"><Icon /></span>
@@ -93,7 +93,7 @@ function Index() {
           <p className="mt-3 text-muted-foreground">This is a sample conversation. Pick the right reply to keep the conversation going — no account needed.</p>
           <Button asChild variant="link" className="mt-2 px-0"><Link to="/practice">See all scenarios →</Link></Button>
         </div>
-        <Conversation scenario={SCENARIOS[0]} />
+        <Conversation scenario={SCENARIOS[0]!} />
       </section>
 
       <section className="surface my-12 grid gap-6 p-8 md:grid-cols-3" aria-labelledby="access">
