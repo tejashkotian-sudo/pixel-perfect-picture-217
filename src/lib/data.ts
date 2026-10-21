@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Attempt, Completion } from "./progress";
+import { fetchEvents } from "./progress-api";
+import { progressFromEvents } from "./progress-events";
 
 export async function fetchProfile(userId: string) {
   const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
@@ -7,26 +9,26 @@ export async function fetchProfile(userId: string) {
   return data;
 }
 
-export async function fetchProgress(userId: string): Promise<{ completions: Completion[]; attempts: Attempt[] }> {
-  const [c, a] = await Promise.all([
+export async function fetchProgress(userId: string) {
+  const [c, a, events] = await Promise.all([
     supabase.from("lesson_completions").select("lesson_id,score,total,points,completed_at").eq("user_id", userId).order("completed_at", { ascending: false }),
     supabase.from("quiz_attempts").select("correct,created_at").eq("user_id", userId),
+    fetchEvents(),
   ]);
   if (c.error) throw c.error;
   if (a.error) throw a.error;
-  return { completions: c.data ?? [], attempts: a.data ?? [] };
+  if (!events.ok) throw new Error(events.message);
+  const derived = progressFromEvents(events.data);
+  const completions: Completion[] = [...(c.data ?? []), ...derived.completions];
+  completions.sort((a, b) => b.completed_at.localeCompare(a.completed_at));
+  const attempts: Attempt[] = [...(a.data ?? []), ...derived.attempts];
+  return { completions, attempts, conversations: derived.conversations, activityDates: [...derived.activityDates, ...(c.data ?? []).map((r) => r.completed_at)] };
 }
 
-export async function recordQuiz(userId: string, lessonId: string, results: { questionId: string; correct: boolean }[]) {
+export async function recordQuiz(_userId: string, lessonId: string, results: { questionId: string; correct: boolean }[], attemptId: string) {
   const score = results.filter((r) => r.correct).length;
-  const a = await supabase.from("quiz_attempts").insert(
-    results.map((r) => ({ user_id: userId, lesson_id: lessonId, question_id: r.questionId, correct: r.correct })),
-  );
-  if (a.error) throw a.error;
-  const c = await supabase
-    .from("lesson_completions")
-    .insert({ user_id: userId, lesson_id: lessonId, score, total: results.length, points: score * 10 });
-  if (c.error) throw c.error;
+  const { error } = await supabase.rpc("save_quiz_progress", { p_lesson_id: lessonId, p_attempt_id: attemptId, p_results: results });
+  if (error) throw error;
   return score;
 }
 
