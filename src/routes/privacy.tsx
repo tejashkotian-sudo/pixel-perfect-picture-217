@@ -8,6 +8,8 @@ export const Route = createFileRoute("/privacy")({
       { name: "description", content: "How Kannada Connect handles your data." },
       { property: "og:title", content: "Privacy — Kannada Connect" },
       { property: "og:description", content: "How Kannada Connect handles your data." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (

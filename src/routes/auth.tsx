@@ -18,6 +18,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Create a free Kannada Connect account to save your learning progress." },
       { property: "og:title", content: "Log in — Kannada Connect" },
       { property: "og:description", content: "Save your Kannada learning progress." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,

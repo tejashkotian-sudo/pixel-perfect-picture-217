@@ -14,6 +14,8 @@ export const Route = createFileRoute("/learn")({
       { name: "description", content: "Six practical modules: basics, travel, shopping & food, college & work, healthcare and everyday life." },
       { property: "og:title", content: "Kannada lessons — Kannada Connect" },
       { property: "og:description", content: "Six practical modules for everyday Kannada." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Learn,
