@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { Page, PhraseRow, SpeakButton } from "@/components/site";
@@ -23,6 +23,8 @@ export const Route = createFileRoute("/lesson/$lessonId")({
           { name: "description", content: `Learn Kannada phrases for ${loaderData.title.toLowerCase()} (${loaderData.module}).` },
           { property: "og:title", content: `${loaderData.title} — Kannada Connect` },
           { property: "og:description", content: `A short Kannada lesson from ${loaderData.module}.` },
+          { property: "og:type", content: "website" },
+          { name: "twitter:card", content: "summary_large_image" },
         ]
       : [{ title: "Lesson unavailable — Kannada Connect" }, { name: "robots", content: "noindex" }],
   }),
@@ -31,34 +33,45 @@ export const Route = createFileRoute("/lesson/$lessonId")({
 
 function LessonPage() {
   const { lessonId } = Route.useParams();
-  const lesson = getLesson(lessonId)!;
-  const quiz = useMemo(() => buildQuiz(lesson), [lesson]);
+  const lesson = getLesson(lessonId);
+  const quiz = useMemo(() => lesson ? buildQuiz(lesson) : [], [lesson]);
   const { user } = useAuth();
   const qc = useQueryClient();
   const [phase, setPhase] = useState<"learn" | "quiz" | "done">("learn");
   const [qi, setQi] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [results, setResults] = useState<{ questionId: string; correct: boolean }[]>([]);
-  const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "guest">("idle");
+  const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "guest" | "error">("idle");
+  const attemptId = useRef<string | null>(null);
+  const saving = useRef(false);
 
-  const q = quiz[qi]!;
+  const q = quiz[qi];
+  if (!lesson || !q) return <Page><p>Lesson unavailable.</p></Page>;
+
+  async function save(r: { questionId: string; correct: boolean }[]) {
+    if (!user) return setSaved("guest");
+    if (!lesson || saving.current) return;
+    saving.current = true;
+    attemptId.current ??= crypto.randomUUID();
+    setSaved("saving");
+    try {
+      await recordQuiz(user.id, lesson.id, r, attemptId.current);
+      setSaved("saved");
+      await qc.invalidateQueries({ queryKey: ["progress"] });
+    } catch {
+      setSaved("error");
+      toast.error("Couldn't save your result. Check your connection and try again.");
+    } finally { saving.current = false; }
+  }
 
   async function next() {
+    if (!q || picked == null) return;
     const r = [...results, { questionId: q.id, correct: picked === q.answer }];
     setResults(r);
     setPicked(null);
     if (qi + 1 < quiz.length) return setQi(qi + 1);
     setPhase("done");
-    if (!user) return setSaved("guest");
-    setSaved("saving");
-    try {
-      await recordQuiz(user.id, lesson.id, r);
-      setSaved("saved");
-      qc.invalidateQueries({ queryKey: ["progress"] });
-    } catch {
-      setSaved("idle");
-      toast.error("Couldn't save your result. Check your connection and try again.");
-    }
+    await save(r);
   }
 
   const score = results.filter((r) => r.correct).length;
@@ -92,9 +105,9 @@ function LessonPage() {
             {q.options.map((o) => {
               const state = picked == null ? "" : o === q.answer ? "border-success bg-success/10" : o === picked ? "border-destructive bg-destructive/10" : "opacity-60";
               return (
-                <button key={o} role="radio" aria-checked={picked === o} disabled={picked != null} onClick={() => setPicked(o)} className={`rounded-xl border border-border p-3 text-left hover:border-saffron ${state}`}>
+                <Button variant="outline" key={o} role="radio" aria-checked={picked === o} disabled={picked != null} onClick={() => setPicked(o)} className={`h-auto justify-start whitespace-normal rounded-xl border border-border p-3 text-left hover:border-saffron ${state}`}>
                   {o}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -118,9 +131,11 @@ function LessonPage() {
             {saved === "saving" && "Saving your progress…"}
             {saved === "saved" && "Saved to your progress."}
             {saved === "guest" && "You're not logged in, so this result wasn't saved."}
+            {saved === "error" && "Your result hasn't been saved yet."}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Button variant="soft" onClick={() => { setPhase("learn"); setQi(0); setResults([]); setSaved("idle"); }}>Practise again</Button>
+            {saved === "error" && <Button variant="hero" onClick={() => save(results)}>Retry saving</Button>}
+            <Button variant="soft" disabled={saved === "saving"} onClick={() => { attemptId.current = null; setPhase("learn"); setQi(0); setPicked(null); setResults([]); setSaved("idle"); }}>Practise again</Button>
             {saved === "guest" ? (
               <Button asChild variant="hero"><Link to="/auth" search={{ mode: "signup" }}>Create a free account</Link></Button>
             ) : (

@@ -8,6 +8,8 @@ export const Route = createFileRoute("/about")({
       { name: "description", content: "Why Kannada Connect exists and who it is for." },
       { property: "og:title", content: "About — Kannada Connect" },
       { property: "og:description", content: "Why Kannada Connect exists and who it is for." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (

@@ -80,6 +80,42 @@ export type Database = {
         }
         Relationships: []
       }
+      progress_events: {
+        Row: {
+          attempt_id: string | null
+          correct: boolean | null
+          created_at: string
+          id: string
+          item_id: string
+          kind: string
+          lesson_id: string | null
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          attempt_id?: string | null
+          correct?: boolean | null
+          created_at?: string
+          id?: string
+          item_id: string
+          kind: string
+          lesson_id?: string | null
+          score?: number | null
+          user_id?: string
+        }
+        Update: {
+          attempt_id?: string | null
+          correct?: boolean | null
+          created_at?: string
+          id?: string
+          item_id?: string
+          kind?: string
+          lesson_id?: string | null
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       quiz_attempts: {
         Row: {
           correct: boolean
@@ -112,7 +148,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      reset_learner_progress: { Args: never; Returns: undefined }
+      save_quiz_progress: {
+        Args: { p_attempt_id: string; p_lesson_id: string; p_results: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
