@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { Menu, Volume2, X } from "lucide-react";
+import { Loader2, Menu, Volume2, X } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { speak } from "@/lib/data";
@@ -89,14 +90,24 @@ export function Page({ children }: { children: ReactNode }) {
 }
 
 export function SpeakButton({ text }: { text: string }) {
+  const [playing, setPlaying] = useState(false);
   return (
     <button
       type="button"
-      onClick={() => speak(text)}
+      disabled={playing}
+      onClick={async () => {
+        setPlaying(true);
+        try {
+          const ok = await speak(text);
+          if (!ok) toast.error("Audio isn't available on this device or connection right now.");
+        } finally {
+          setPlaying(false);
+        }
+      }}
       aria-label={`Listen to ${text}`}
-      className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground hover:bg-saffron/40"
+      className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground hover:bg-saffron/40 disabled:opacity-70"
     >
-      <Volume2 className="size-4" />
+      {playing ? <Loader2 className="size-4 animate-spin" /> : <Volume2 className="size-4" />}
     </button>
   );
 }
