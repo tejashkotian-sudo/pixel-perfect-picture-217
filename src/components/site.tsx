@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
-import { Menu, Volume2, X } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Menu, Square, Volume2, X } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { speak } from "@/lib/data";
+import { speak, stopSpeaking } from "@/lib/speech";
 import type { Phrase } from "@/lib/curriculum";
 
 const NAV = [
@@ -88,15 +89,38 @@ export function Page({ children }: { children: ReactNode }) {
   );
 }
 
-export function SpeakButton({ text }: { text: string }) {
+export function SpeakButton({ text, roman }: { text: string; roman?: string }) {
+  const [speaking, setSpeaking] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.getVoices();
+  }, []);
+
+  const toggle = () => {
+    if (speaking) {
+      stopSpeaking();
+      setSpeaking(false);
+      return;
+    }
+    setSpeaking(true);
+    const ok = speak({ kn: text, tr: roman }, { onEnd: () => setSpeaking(false) });
+    if (!ok) {
+      setSpeaking(false);
+      toast.error("This browser can't play speech. Try Chrome or Edge.");
+    }
+  };
+
   return (
     <button
       type="button"
-      onClick={() => speak(text)}
-      aria-label={`Listen to ${text}`}
-      className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground hover:bg-saffron/40"
+      onClick={toggle}
+      aria-label={speaking ? "Stop listening" : `Listen to ${text}`}
+      aria-pressed={speaking}
+      className={`grid size-9 shrink-0 place-items-center rounded-full ${
+        speaking ? "bg-saffron text-primary-foreground" : "bg-accent text-accent-foreground hover:bg-saffron/40"
+      }`}
     >
-      <Volume2 className="size-4" />
+      {speaking ? <Square className="size-3.5 fill-current" /> : <Volume2 className="size-4" />}
     </button>
   );
 }
@@ -104,7 +128,7 @@ export function SpeakButton({ text }: { text: string }) {
 export function PhraseRow({ p }: { p: Phrase }) {
   return (
     <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-      <SpeakButton text={p.kn} />
+      <SpeakButton text={p.kn} roman={p.tr} />
       <div className="min-w-0">
         <div className="kn text-xl font-semibold text-primary">{p.kn}</div>
         <div className="text-sm italic text-muted-foreground">{p.tr}</div>

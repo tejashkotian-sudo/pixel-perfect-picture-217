@@ -15,7 +15,7 @@ export const Route = createFileRoute("/practice")({
   component: () => (
     <Page>
       <h1 className="text-4xl font-semibold">Real-life practice</h1>
-      <p className="mt-2 max-w-xl text-muted-foreground">Sample conversations you'll meet in Karnataka. Choose the right reply to move forward — wrong answers explain why.</p>
+      <p className="mt-2 max-w-xl text-muted-foreground">Sample conversations you'll meet in Karnataka. Tap the speaker to hear a line, then choose the right reply — wrong answers explain why.</p>
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         {SCENARIOS.map((s) => <Conversation key={s.id} scenario={s} />)}
       </div>

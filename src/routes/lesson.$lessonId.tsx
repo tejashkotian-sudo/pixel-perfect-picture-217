@@ -2,13 +2,14 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Volume2, XCircle } from "lucide-react";
 import { Page, PhraseRow, SpeakButton } from "@/components/site";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { buildQuiz, getLesson } from "@/lib/curriculum";
 import { useAuth } from "@/hooks/useAuth";
 import { recordQuiz } from "@/lib/data";
+import { speakSequence, stopSpeaking } from "@/lib/speech";
 
 export const Route = createFileRoute("/lesson/$lessonId")({
   loader: ({ params }) => {
@@ -40,6 +41,7 @@ function LessonPage() {
   const [picked, setPicked] = useState<string | null>(null);
   const [results, setResults] = useState<{ questionId: string; correct: boolean }[]>([]);
   const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "guest">("idle");
+  const [playingAll, setPlayingAll] = useState(false);
 
   const q = quiz[qi]!;
 
@@ -72,8 +74,29 @@ function LessonPage() {
       {phase === "learn" && (
         <div className="mt-8 max-w-2xl space-y-3">
           {lesson.phrases.map((p) => <PhraseRow key={p.kn} p={p} />)}
-          <p className="pt-2 text-sm text-muted-foreground">Tip: tap the speaker, then say each phrase aloud yourself.</p>
-          <Button variant="hero" size="lg" onClick={() => setPhase("quiz")}>Start quiz ({quiz.length} questions)</Button>
+          <p className="pt-2 text-sm text-muted-foreground">Tip: tap the speaker to hear the phrase, then say it aloud yourself.</p>
+          <div className="flex flex-wrap gap-3 pt-1">
+            <Button
+              variant="soft"
+              size="lg"
+              onClick={() => {
+                if (playingAll) {
+                  stopSpeaking();
+                  setPlayingAll(false);
+                  return;
+                }
+                const ok = speakSequence(lesson.phrases, { onEnd: () => setPlayingAll(false) });
+                if (!ok) {
+                  toast.error("This browser can't play speech. Try Chrome or Edge.");
+                  return;
+                }
+                setPlayingAll(true);
+              }}
+            >
+              <Volume2 /> {playingAll ? "Stop listening" : "Listen to all phrases"}
+            </Button>
+            <Button variant="hero" size="lg" onClick={() => { stopSpeaking(); setPlayingAll(false); setPhase("quiz"); }}>Start quiz ({quiz.length} questions)</Button>
+          </div>
         </div>
       )}
 
@@ -82,7 +105,7 @@ function LessonPage() {
           <Progress value={(qi / quiz.length) * 100} aria-label="Quiz progress" />
           <div className="mt-6 text-sm text-muted-foreground">Question {qi + 1} of {quiz.length} · What does this mean?</div>
           <div className="mt-2 flex items-center gap-3">
-            <SpeakButton text={q.prompt.kn} />
+            <SpeakButton text={q.prompt.kn} roman={q.prompt.tr} />
             <div>
               <div className="kn text-3xl font-semibold text-primary">{q.prompt.kn}</div>
               <div className="text-sm italic text-muted-foreground">{q.prompt.tr}</div>

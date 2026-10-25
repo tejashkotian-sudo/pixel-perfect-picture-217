@@ -126,7 +126,7 @@ function DailyChallenge({ userId, doneToday }: { userId: string; doneToday: bool
     <div className="surface p-6">
       <div className="text-xs font-semibold uppercase tracking-wide text-saffron">Daily challenge</div>
       <div className="mt-2 flex items-center gap-3">
-        <SpeakButton text={phrase.kn} />
+        <SpeakButton text={phrase.kn} roman={phrase.tr} />
         <div>
           <div className="kn text-2xl font-semibold text-primary">{phrase.kn}</div>
           <div className="text-sm italic text-muted-foreground">{phrase.tr}</div>

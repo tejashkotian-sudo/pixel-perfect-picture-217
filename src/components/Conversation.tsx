@@ -45,10 +45,13 @@ export function Conversation({ scenario }: { scenario: Scenario }) {
         <div className="mt-4 grid gap-2">
           <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Choose your reply</div>
           {cur.choices.map((c, i) => (
-            <button key={i} onClick={() => choose(i)} className="rounded-xl border border-border bg-background p-3 text-left hover:border-saffron hover:bg-accent/40">
-              <span className="kn block font-semibold text-primary">{c.reply.kn}</span>
-              <span className="text-xs text-muted-foreground">{c.reply.tr} · {c.reply.en}</span>
-            </button>
+            <div key={i} className="flex items-stretch gap-2">
+              <SpeakButton text={c.reply.kn} roman={c.reply.tr} />
+              <button onClick={() => choose(i)} className="flex-1 rounded-xl border border-border bg-background p-3 text-left hover:border-saffron hover:bg-accent/40">
+                <span className="kn block font-semibold text-primary">{c.reply.kn}</span>
+                <span className="text-xs text-muted-foreground">{c.reply.tr} · {c.reply.en}</span>
+              </button>
+            </div>
           ))}
         </div>
       ) : (
@@ -64,7 +67,7 @@ export function Conversation({ scenario }: { scenario: Scenario }) {
 function Bubble({ who, kn, tr, en, mine }: { who: string; kn: string; tr: string; en: string; mine?: boolean }) {
   return (
     <div className={`flex items-start gap-2 ${mine ? "flex-row-reverse text-right" : ""}`}>
-      <SpeakButton text={kn} />
+      <SpeakButton text={kn} roman={tr} />
       <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${mine ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
         <div className="text-[10px] uppercase tracking-wide opacity-70">{who}</div>
         <div className="kn text-lg font-semibold">{kn}</div>

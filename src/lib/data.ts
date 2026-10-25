@@ -29,16 +29,3 @@ export async function recordQuiz(userId: string, lessonId: string, results: { qu
   if (c.error) throw c.error;
   return score;
 }
-
-/** Speak Kannada text using the browser's speech engine, if a voice is available. */
-export function speak(text: string) {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "kn-IN";
-  u.rate = 0.8;
-  const voice = window.speechSynthesis.getVoices().find((v) => v.lang.toLowerCase().startsWith("kn"));
-  if (voice) u.voice = voice;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(u);
-  return true;
-}
