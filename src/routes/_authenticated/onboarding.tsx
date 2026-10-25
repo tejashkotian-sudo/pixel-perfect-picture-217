@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/site";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
-  head: () => ({ meta: [{ title: "Set up your learning — Kannada Connect" }, { name: "description", content: "Tell us your level and goals." }] }),
+  head: () => ({ meta: [{ title: "Set up your learning — Kannada Connect" }, { name: "description", content: "Tell us your level and goals." }, { property: "og:title", content: "Set up your learning — Kannada Connect" }, { property: "og:description", content: "Personalise your Kannada learning level, goal and daily target." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: Onboarding,
 });
 

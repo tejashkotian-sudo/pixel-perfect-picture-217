@@ -1,6 +1,11 @@
 import { Link } from "@tanstack/react-router";
+<<<<<<< HEAD
 import { useEffect, useState, type ReactNode } from "react";
 import { Menu, Square, Volume2, X } from "lucide-react";
+=======
+import { useState, type ReactNode } from "react";
+import { Loader2, Menu, Volume2, X } from "lucide-react";
+>>>>>>> cb98edfb1b2611e8296ceafb9c8aabafc4be2ed7
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -89,6 +94,7 @@ export function Page({ children }: { children: ReactNode }) {
   );
 }
 
+<<<<<<< HEAD
 export function SpeakButton({ text, roman }: { text: string; roman?: string }) {
   const [speaking, setSpeaking] = useState(false);
 
@@ -121,6 +127,27 @@ export function SpeakButton({ text, roman }: { text: string; roman?: string }) {
       }`}
     >
       {speaking ? <Square className="size-3.5 fill-current" /> : <Volume2 className="size-4" />}
+=======
+export function SpeakButton({ text }: { text: string }) {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <button
+      type="button"
+      disabled={playing}
+      onClick={async () => {
+        setPlaying(true);
+        try {
+          const ok = await speak(text);
+          if (!ok) toast.error("Audio isn't available on this device or connection right now.");
+        } finally {
+          setPlaying(false);
+        }
+      }}
+      aria-label={`Listen to ${text}`}
+      className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground hover:bg-saffron/40 disabled:opacity-70"
+    >
+      {playing ? <Loader2 className="size-4 animate-spin" /> : <Volume2 className="size-4" />}
+>>>>>>> cb98edfb1b2611e8296ceafb9c8aabafc4be2ed7
     </button>
   );
 }

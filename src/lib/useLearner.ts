@@ -8,12 +8,13 @@ export function useLearner(userId: string) {
   const progress = useQuery({ queryKey: ["progress", userId], queryFn: () => fetchProgress(userId) });
   const completions = progress.data?.completions ?? [];
   const attempts = progress.data?.attempts ?? [];
-  const streak = computeStreak(completions.map((c) => c.completed_at));
+  const streak = computeStreak(progress.data?.activityDates ?? []);
   return {
     loading: profile.isLoading || progress.isLoading,
     error: profile.error || progress.error,
     profile: profile.data,
     completions,
+    conversations: progress.data?.conversations ?? new Set<string>(),
     streak,
     points: totalPoints(completions),
     accuracy: computeAccuracy(attempts),

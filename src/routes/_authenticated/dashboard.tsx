@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Award, Flame, Target, Trophy, BookOpen, Sparkles } from "lucide-react";
 import { Page, SpeakButton } from "@/components/site";
@@ -10,7 +10,7 @@ import { ALL_LESSONS, dailyPhrase } from "@/lib/curriculum";
 import { recordQuiz } from "@/lib/data";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Your dashboard — Kannada Connect" }, { name: "description", content: "Your Kannada learning progress." }] }),
+  head: () => ({ meta: [{ title: "Your dashboard — Kannada Connect" }, { name: "description", content: "Your Kannada learning progress." }, { property: "og:title", content: "Your dashboard — Kannada Connect" }, { property: "og:description", content: "Your Kannada learning progress." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: Dashboard,
 });
 
@@ -112,15 +112,24 @@ function DailyChallenge({ userId, doneToday }: { userId: string; doneToday: bool
   const options = [...new Set([phrase.en, ...ALL_LESSONS.flatMap((l) => l.phrases.map((x) => x.en)).filter((e) => e !== phrase.en).slice(phrase.en.length % 20, (phrase.en.length % 20) + 2)])];
   options.sort();
   const [picked, setPicked] = useState<string | null>(null);
+  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const attemptId = useRef<string | null>(null);
+  const saving = useRef(false);
   const qc = useQueryClient();
   async function pick(o: string) {
+    if (saving.current || doneToday || status === "saved") return;
+    saving.current = true;
+    attemptId.current ??= crypto.randomUUID();
     setPicked(o);
+    setStatus("saving");
     try {
-      await recordQuiz(userId, "daily", [{ questionId: `daily-${new Date().toDateString()}`, correct: o === phrase.en }]);
-      qc.invalidateQueries({ queryKey: ["progress"] });
+      await recordQuiz(userId, "daily", [{ questionId: `daily-${new Date().toDateString()}`, correct: o === phrase.en }], attemptId.current);
+      setStatus("saved");
+      await qc.invalidateQueries({ queryKey: ["progress"] });
     } catch {
+      setStatus("error");
       toast.error("Couldn't save the challenge.");
-    }
+    } finally { saving.current = false; }
   }
   return (
     <div className="surface p-6">
@@ -137,13 +146,15 @@ function DailyChallenge({ userId, doneToday }: { userId: string; doneToday: bool
       ) : (
         <div className="mt-4 grid gap-2 sm:grid-cols-3">
           {options.map((o) => (
-            <button key={o} disabled={picked != null} onClick={() => pick(o)}
-              className={`rounded-xl border p-3 text-sm ${picked == null ? "border-border hover:border-saffron" : o === phrase.en ? "border-success bg-success/10" : o === picked ? "border-destructive bg-destructive/10" : "opacity-60"}`}>
+            <Button variant="outline" key={o} disabled={picked != null} onClick={() => pick(o)}
+              className={`h-auto whitespace-normal rounded-xl border p-3 text-sm ${picked == null ? "border-border hover:border-saffron" : o === phrase.en ? "border-success bg-success/10" : o === picked ? "border-destructive bg-destructive/10" : "opacity-60"}`}>
               {o}
-            </button>
+            </Button>
           ))}
         </div>
       )}
+      {status === "saving" && <p role="status" className="mt-3 text-sm text-muted-foreground">Saving your answer…</p>}
+      {status === "error" && picked && <Button className="mt-3" variant="soft" onClick={() => pick(picked)}>Retry saving</Button>}
     </div>
   );
 }

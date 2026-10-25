@@ -10,6 +10,8 @@ export const Route = createFileRoute("/practice")({
       { name: "description", content: "Practise Kannada in interactive scenarios: auto rides, cafés and pharmacies." },
       { property: "og:title", content: "Real-Life Practice — Kannada Connect" },
       { property: "og:description", content: "Interactive Kannada conversation scenarios." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (
